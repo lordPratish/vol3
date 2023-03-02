@@ -37,7 +37,16 @@ cd volatility3 || { echo "Could not change to volatility3 directory"; exit 1; }
 # Install minimal requirements for volatility3
 pip3 install -r requirements-minimal.txt
 
+# Download and extract Windows symbols
+if [ ! -d "symbols" ]; then
+    mkdir symbols
+fi
+cd symbols || { echo "Could not change to symbols directory"; exit 1; }
+wget https://downloads.volatilityfoundation.org/volatility3/symbols/windows.zip || { echo "Could not download symbols zip"; exit 1; }
+unzip windows.zip || { echo "Could not extract symbols zip"; exit 1; }
+
 # Display volatility3 help
+cd ..
 if [ -d "volatility3" ]; then
     python3 vol.py -h
 else
