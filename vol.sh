@@ -29,26 +29,32 @@ if ! command -v git &> /dev/null; then
     echo "Git not found. Please install Git and try again"
     exit 1
 fi
-if [ ! -d "volatility3" ]; then
-    git clone https://github.com/volatilityfoundation/volatility3.git
+if [ ! -d "/opt/volatility3" ]; then
+    git clone https://github.com/volatilityfoundation/volatility3.git /opt/volatility3
 fi
-cd volatility3 || { echo "Could not change to volatility3 directory"; exit 1; }
+cd /opt/volatility3 || { echo "Could not change to volatility3 directory"; exit 1; }
 
 # Install minimal requirements for volatility3
 pip3 install -r requirements-minimal.txt
 
 # Download and extract Windows symbols
-if [ ! -d "symbols" ]; then
-    mkdir symbols
+if [ ! -d "/opt/volatility3/volatility3/symbols" ]; then
+    mkdir /opt/volatility3/volatility3/symbols
 fi
-cd symbols || { echo "Could not change to symbols directory"; exit 1; }
-wget https://downloads.volatilityfoundation.org/volatility3/symbols/windows.zip || { echo "Could not download symbols zip"; exit 1; }
-unzip windows.zip || { echo "Could not extract symbols zip"; exit 1; }
+cd /opt/volatility3/volatility3/symbols || { echo "Could not change to symbols directory"; exit 1; }
+if ! wget -q https://downloads.volatilityfoundation.org/volatility3/symbols/windows.zip; then
+    echo "Could not download symbols zip"
+    exit 1
+fi
+if ! unzip -q windows.zip; then
+    echo "Could not extract symbols zip"
+    exit 1
+fi
 
 # Display volatility3 help
-cd ..
+cd /opt/volatility3 || { echo "Could not change to volatility3 directory"; exit 1; }
 if [ -d "volatility3" ]; then
-    python3 vol.py -h
+    python3 volatility3/vol.py -h
 else
     echo "Could not find volatility3 directory. Please check if the directory was created correctly"
     exit 1
