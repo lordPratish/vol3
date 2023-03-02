@@ -1,41 +1,84 @@
 #!/bin/bash
 
+# Define color codes
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m'
+
 # Check for root privileges
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" 
+   echo -e "${RED}This script must be run as root${NC}" 
    exit 1
 fi
 
 # Update package lists
-apt-get update
+if apt-get update; then
+    echo -e "${GREEN}Package lists updated successfully${NC}"
+else
+    echo -e "${RED}Could not update package lists${NC}"
+    exit 1
+fi
 
 # Install pip
 if ! command -v pip3 &> /dev/null; then
-    wget https://bootstrap.pypa.io/pip/get-pip.py
-    python3 get-pip.py || { echo "Could not install pip"; exit 1; }
+    if wget https://bootstrap.pypa.io/pip/get-pip.py && python3 get-pip.py; then
+        echo -e "${GREEN}Pip installed successfully${NC}"
+    else
+        echo -e "${RED}Could not install pip${NC}"
+        exit 1
+    fi
+else
+    echo -e "${GREEN}Pip is already installed${NC}"
 fi
 
 # Upgrade setuptools
-pip3 install --upgrade setuptools
+if pip3 install --upgrade setuptools; then
+    echo -e "${GREEN}Setuptools upgraded successfully${NC}"
+else
+    echo -e "${RED}Could not upgrade setuptools${NC}"
+    exit 1
+fi
 
 # Install dependencies for pycryptodome and volatility3
-apt-get install -y python3-dev
+if apt-get install -y python3-dev; then
+    echo -e "${GREEN}Dependencies for pycryptodome and volatility3 installed successfully${NC}"
+else
+    echo -e "${RED}Could not install dependencies for pycryptodome and volatility3${NC}"
+    exit 1
+fi
 
 # Install pycryptodome, distorm3, and yara-python
-pip3 install pycryptodome distorm3 yara-python
+if pip3 install pycryptodome distorm3 yara-python; then
+    echo -e "${GREEN}pycryptodome, distorm3, and yara-python installed successfully${NC}"
+else
+    echo -e "${RED}Could not install pycryptodome, distorm3, and yara-python${NC}"
+    exit 1
+fi
 
 # Clone volatility3 repository
 if ! command -v git &> /dev/null; then
-    echo "Git not found. Please install Git and try again"
+    echo -e "${RED}Git not found. Please install Git and try again${NC}"
     exit 1
 fi
 if [ ! -d "/opt/volatility3" ]; then
-    git clone https://github.com/volatilityfoundation/volatility3.git /opt/volatility3
+    if git clone https://github.com/volatilityfoundation/volatility3.git /opt/volatility3; then
+        echo -e "${GREEN}Volatility3 repository cloned successfully${NC}"
+    else
+        echo -e "${RED}Could not clone Volatility3 repository${NC}"
+        exit 1
+    fi
+else
+    echo -e "${GREEN}Volatility3 repository is already cloned${NC}"
 fi
-cd /opt/volatility3 || { echo "Could not change to volatility3 directory"; exit 1; }
+cd /opt/volatility3 || { echo -e "${RED}Could not change to volatility3 directory${NC}"; exit 1; }
 
 # Install minimal requirements for volatility3
-pip3 install -r requirements-minimal.txt
+if pip3 install -r requirements-minimal.txt; then
+    echo -e "${GREEN}Minimal requirements for volatility3 installed successfully${NC}"
+else
+    echo -e "${RED}Could not install minimal requirements for volatility3${NC}"
+    exit 1
+fi
 
 # Download and extract Windows symbols
 if [ ! -d "/opt/volatility3/volatility3/symbols" ]; then
